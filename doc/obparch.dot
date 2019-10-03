@@ -1,0 +1,15 @@
+graph {
+  docker -- postgres;
+  docker -- erlang;
+  erlang -- ppool;
+  erlang -- cowboy;
+  erlang -- postgres;
+  cowboy -- static;
+  cowboy -- websockets;
+  static -- react;
+  react -- redux;
+  react -- material;
+  redux -- websockets;
+  cowboy -- postgres;
+  cowboy -- ppool;
+}

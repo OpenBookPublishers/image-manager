@@ -1,0 +1,10 @@
+
+div {
+  width: 100%;
+}
+
+li {
+  list-style: none;
+  margin-width: 5px;
+  padding: 10px;
+}

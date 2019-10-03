@@ -1,0 +1,92 @@
+
+Image Manager protocol
+======================
+
+There are the following communications channels:
+
+* HTTP calls
+* Websocket requests, which may or may not get a synchronous response
+  to the client
+* Websocket broadcasts, which generally go to *all* connected clients
+
+Mostly, communication is via JSON blobs.
+
+HTTP calls
+==========
+
+URL structure for HTTP calls is as follows:
+
+  /api/images - get a JSON blob of all images in the system
+  /api/upload - upload an image
+  /thumbnails - static files
+  /images     - static files
+  /public     - static files
+  /websocket  - hook for websocket communications
+
+So, effectively, there are only two HTTP API calls:
+
+/api/images
+-----------
+
+A GET request should elicit a JSON blob in the following format:
+
+TBD
+
+/api/upload
+-----------
+
+A POST request may be used to send a binary image. It must have the
+following characteristics:
+
+TBD
+
+It shall elicit the following response:
+
+TBD
+
+Websocket messages, client to server
+====================================
+
+All server-received messages on websocket shall have the following structure,
+a JSON object thus:
+
+{
+  "event": EventType,
+  "details": Details
+}
+
+where Details is also a JSON dictionary, or is entirely absent. Unless
+the "details" key is required by the particular type of event, then it
+shall be ignored.
+
+Valid EventTypes are as follows:
+
+* get_all_images
+* get_all_chapters
+* delete_image
+* update_image
+
+
+Websocket individual messages, server responding to particular client request
+=============================================================================
+
+
+
+Websocket broadcast messages, server to client(s)
+=================================================
+
+All server-broadcast messages on websocket shall have the following structure,
+a JSON object thus:
+
+{
+  "type": Type,
+  "details": Details
+}
+
+where Details is a JSON object, which differs by type, and where Type is one of:
+
+* update_image
+* create_file
+* remove_image
+* update_rank
+

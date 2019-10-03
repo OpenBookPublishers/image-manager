@@ -1,0 +1,30 @@
+version: '3'
+services:
+  web:
+    # build: app/.
+    image: base-im
+    depends_on:
+     - db
+    ports:
+     - "8080:8080"
+     - "8443:8443"
+    environment:
+      PGHOST: db
+      PGUSER: $USER
+      PGNAME: starter
+    volumes:
+      - ./app/imagemanager/apps/imagemanager/priv/public:/imagemanager/lib/imagemanager-0.1.0/priv/public
+  db:
+    image: postgres:10
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: $USER
+      POSTGRES_DB: starter
+    volumes:
+      - db:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
+      - ./db:/docker-entrypoint-initdb.d
+volumes:
+  db:

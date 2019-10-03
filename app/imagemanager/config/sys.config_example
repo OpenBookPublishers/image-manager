@@ -1,0 +1,6 @@
+[
+  {imagemanager, [
+    {uploaded_dir, "/tmp/imgmgr/uploaded"},
+    {thumbnail_dir, "/tmp/imgmgr/thumbnails"}
+  ]}
+].
