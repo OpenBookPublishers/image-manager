@@ -180,6 +180,9 @@ sent to the user:
 * upload of something which isn't an image
 * upload of an image that already exists
 
+Authors should be notified to renumber their captions when the system
+becomes aware that this might be necessary.
+
 Image status
 ------------
 
