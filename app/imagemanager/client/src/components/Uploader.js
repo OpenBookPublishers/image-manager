@@ -14,7 +14,8 @@ const imageFieldName = "thefile"; // must match server
 const imageChapterUuid = "X-Chapter-Uuid"; // must match server
 
 const handleUpload = (file, chapterUuid) => {
-    const url = "http://" + window.location.host + "/api/upload";
+    const tls = window.location.protocol.slice(4, -1);
+    const url = "http" + tls + "://" + window.location.host + "/api/upload";
     const req = new XMLHttpRequest();
     req.open("POST", url, true);
 
