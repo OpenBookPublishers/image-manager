@@ -181,7 +181,7 @@ save_image(Hash, Format, Resolution, Res_Category, Filename, Metadata) ->
 
     Caption = "Caption TBD for " ++ binary_to_list(Filename),
     Copyright = "To Be Determined",
-    Placeholder = "f",
+    Placeholder = false,
     Parameters = [Hash,
                   Caption,
                   Format,
