@@ -30,7 +30,6 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "postbuild": "./postbuild.sh",
     "eject": "react-scripts eject",
     "test": "react-scripts test --env=node"
   },
