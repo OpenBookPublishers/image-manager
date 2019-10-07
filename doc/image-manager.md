@@ -183,6 +183,9 @@ sent to the user:
 Authors should be notified to renumber their captions when the system
 becomes aware that this might be necessary.
 
+The system shall unobtrusively inform the author how many image upload
+are currently in progress.
+
 Image status
 ------------
 
@@ -213,3 +216,4 @@ effort:
 * Uploading images without associating them with a chapter
 * Editing chapter names / changing the number of chapters
 * Recording / editing the optional image metadata
+* Tracking of number of in-flight image uploads
