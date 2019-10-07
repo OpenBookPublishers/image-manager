@@ -1,6 +1,4 @@
 # Build stage 0
-#FROM erlang:alpine
-#FROM erlang:21.0
 FROM alpine:latest
 
 # Install Rebar3
