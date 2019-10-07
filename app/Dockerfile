@@ -1,5 +1,16 @@
+FROM node AS npm
+
+WORKDIR /build
+
+COPY imagemanager/client/package-lock.json ./
+COPY imagemanager/client/package.json ./
+RUN npm install --no-cache
+COPY imagemanager/client/src ./src
+COPY imagemanager/client/public ./public
+RUN npm run build
+
 # Build stage 0
-FROM alpine:latest
+FROM alpine:latest AS erlangbuild
 
 # Install Rebar3
 RUN mkdir -p /buildroot/rebar3/bin
@@ -19,6 +30,8 @@ RUN apk add --no-cache git && \
 # Copy our Erlang test application
 COPY imagemanager imagemanager
 
+COPY --from=npm /build/build imagemanager/apps/imagemanager/priv/public
+
 # And build the release
 WORKDIR imagemanager
 RUN rebar3 as prod release
@@ -33,7 +46,7 @@ RUN apk add --no-cache openssl \
                        imagemagick
 
 # Install the released application
-COPY --from=0 /buildroot/imagemanager/_build/prod/rel/imagemanager /imagemanager
+COPY --from=erlangbuild /buildroot/imagemanager/_build/prod/rel/imagemanager /imagemanager
 
 RUN mkdir /uploads
 ENV UPLOAD_PATH=/uploads
