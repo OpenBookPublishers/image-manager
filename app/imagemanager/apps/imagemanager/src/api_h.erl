@@ -15,6 +15,12 @@ init(Req0, State) ->
     URI = cowboy_req:path(Req0),
     handle_req(Method, URI, Req0, State).
 
+handle_req(<<"GET">>, <<"/">>, Req0, State) ->
+    Resp = cowboy_req:reply(301,
+      #{
+         <<"Location">> => <<"/public/index.html">>
+       }, <<"">>, Req0),
+    {ok, Resp, State};
 
 handle_req(<<"GET">>, <<"/api/images">>, Req0, State) ->
     {ok, ImageData} = img_mgr_serv:all_images(),

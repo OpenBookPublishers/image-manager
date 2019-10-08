@@ -24,6 +24,7 @@ stop(_State) ->
 start_cowboy() ->
     Dispatch = cowboy_router:compile([
         {'_', [
+            {"/", api_h, []},
             {"/api/[...]", api_h, []},
             {"/images/[...]", api_h, []},
             {"/thumbnails/[...]", api_h, []},
