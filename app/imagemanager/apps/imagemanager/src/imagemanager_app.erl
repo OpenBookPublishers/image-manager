@@ -32,7 +32,7 @@ start_cowboy() ->
             {"/public/[...]", cowboy_static, {priv_dir, imagemanager, "public"}}
         ]}
     ]),
-	{ok, _} = cowboy:start_clear(http, [{port, 8080}], #{
+    {ok, _} = cowboy:start_clear(http, [{port, 8080}], #{
          env => #{dispatch => Dispatch}
     }),
     ok.
