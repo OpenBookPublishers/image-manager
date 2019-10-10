@@ -5,7 +5,7 @@ Expectation management: this is pre-alpha software, in development, but
 under an open source licence so that others may evaluate it in-flight.
 
 Medium-term, the plan is to integrate this into the
-[PubSweet](https://coko.foundation/category/pubsweet/) framework;
+[PubSweet](https://coko.foundation/product-suite/) framework;
 therefore we shall not accept changes which substantively increase the
 effort of doing that.
 
