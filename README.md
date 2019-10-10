@@ -4,6 +4,11 @@ OBP Image Manager
 Expectation management: this is pre-alpha software, in development, but
 under an open source licence so that others may evaluate it in-flight.
 
+Long-term, the plan is to integrate this into the
+[PubSweet](https://coko.foundation/category/pubsweet/) framework;
+therefore we shall not accept changes which substantively increase the
+effort of doing that.
+
 Configuration
 -------------
 
