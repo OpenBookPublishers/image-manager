@@ -16,7 +16,7 @@ We are creating a small web-based tool for saving effort involved in
 managing the collection of images to be used in books. It is likely that
 there is some minimum threshold, e.g., 20 images, beyond which such a tool
 could reduce the effort expended. It is also intended to make things easier
-for authors such that some of the effort can be offloded onto the author
+for editors such that some of the effort can be offloded onto the author
 him/herself.
 
 A tool like this was identified by production staff as the preferred
