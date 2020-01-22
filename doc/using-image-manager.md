@@ -31,6 +31,10 @@ metadata
 * move the image to a position earlier in the chapter - click on the down button
 * edit the image metadata - click on the pen icon
 
+BUG: There is a known problem with chapters: the system periodically resets
+to focus on the first chapter.
+
+
 Initialisation
 --------------
 
