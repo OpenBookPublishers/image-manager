@@ -2,7 +2,7 @@ version: '3'
 services:
   web:
     # build: app/.
-    image: base-im
+    image: openbookpublishers/img-mgr
     depends_on:
      - db
     ports:
@@ -10,21 +10,35 @@ services:
      - "8443:8443"
     environment:
       PGHOST: db
-      PGUSER: $USER
+      PGUSER: willwork
       PGNAME: starter
-    volumes:
-      - ./app/imagemanager/apps/imagemanager/priv/public:/imagemanager/lib/imagemanager-0.1.0/priv/public
+    depends_on:
+      - db
+    networks:
+      local:
+        ipv4_address: 172.20.0.3
+
+
   db:
     image: postgres:10
     restart: unless-stopped
-    ports:
-      - 5432:5432
     environment:
-      POSTGRES_USER: $USER
+      POSTGRES_USER: willwork
       POSTGRES_DB: starter
     volumes:
       - db:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro
       - ./db:/docker-entrypoint-initdb.d
+    networks:
+      local:
+        ipv4_address: 172.20.0.4
+
 volumes:
   db:
+
+networks:
+  local:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.20.0.0/24
