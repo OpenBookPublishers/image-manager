@@ -34,6 +34,10 @@ metadata
 BUG: There is a known problem with chapters: the system periodically resets
 to focus on the first chapter.
 
+BUG: Sometimes the edit icon does not work. This can be obviated by
+reloading the webpage, either with the icon in the browser or,
+customarily, by pressing Ctrl-R, and then clicking the icon again.
+
 
 Initialisation
 --------------
@@ -44,9 +48,7 @@ To create a new instance of the image manager for a new book we need:
 * the number of chapters
 
 In the current version of the image manager, it takes five or ten minutes
-to set up a new instance. This can be obviated by reloading the webpage,
-either with the icon in the browser or, customarily, by pressing Ctrl-R.
-
+to set up a new instance.
 
 Background
 ==========
