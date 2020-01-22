@@ -27,3 +27,4 @@ doc/*.png
 sys.config
 vm.args
 app/rebar3
+db/30-chapters.sql
