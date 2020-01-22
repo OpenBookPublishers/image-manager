@@ -33,12 +33,11 @@ const App = () => (
 
           <TopAppBarSection align='end' role='toolbar'>
             <TopAppBarIcon actionItem tabIndex={0}>
-              <MaterialIcon
+              <a href="/public/using-image-manager.pdf"><MaterialIcon
                 aria-label="print page"
                 hasRipple
-                icon='sync'
-                onClick={() => console.log('print')}
-              />
+                icon='help'
+              /></a>
             </TopAppBarIcon>
             <TopAppBarIcon actionItem tabIndex={1}>
               <MaterialIcon
