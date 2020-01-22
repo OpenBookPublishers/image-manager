@@ -1,6 +1,9 @@
 #!/bin/bash
 
+#APPNAME=$(basename $(pwd -P))
 APPNAME=imagemanager
+CONTAINER_BASE=$APPNAME
+CONTAINER_BASE=$(basename $(pwd -P))
 TAG=base-im
 PGUSER=$USER
 
@@ -62,17 +65,17 @@ case "$1" in
         docker-compose down
         ;;
     erlang-console)
-        docker exec -it ${APPNAME}_web_1 /${APPNAME}/bin/${APPNAME} remote_console
+        docker exec -it ${CONTAINER_BASE}_web_1 /${APPNAME}/bin/${APPNAME} remote_console
         ;;
     shell)
-        docker exec -it ${APPNAME}_web_1 sh
+        docker exec -it ${CONTAINER_BASE}_web_1 sh
         ;;
     psql)
-        docker exec -it ${APPNAME}_db_1 psql -U $USER starter
+        docker exec -it ${CONTAINER_BASE}_db_1 psql -U $USER starter
         ;;
     refresh-schema)
         docker-compose down || true
-        docker volume rm ${APPNAME}_db
+        docker volume rm ${CONTAINER_BASE}_db
         docker-compose up
         ;;
     *)
