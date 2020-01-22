@@ -5,7 +5,7 @@ Author: Martin Keegan
 
 Date: 2019-09-17
 
-Last updated: 2019-09-29
+Last updated: 2019-10-04
 
 Distribution: OBP internal
 
@@ -16,7 +16,7 @@ We are creating a small web-based tool for saving effort involved in
 managing the collection of images to be used in books. It is likely that
 there is some minimum threshold, e.g., 20 images, beyond which such a tool
 could reduce the effort expended. It is also intended to make things easier
-for authors such that some of the effort can be offloded onto the author
+for editors such that some of the effort can be offloded onto the author
 him/herself.
 
 A tool like this was identified by production staff as the preferred
@@ -180,6 +180,12 @@ sent to the user:
 * upload of something which isn't an image
 * upload of an image that already exists
 
+Authors should be notified to renumber their captions when the system
+becomes aware that this might be necessary.
+
+The system shall unobtrusively inform the author how many image upload
+are currently in progress.
+
 Image status
 ------------
 
@@ -210,3 +216,4 @@ effort:
 * Uploading images without associating them with a chapter
 * Editing chapter names / changing the number of chapters
 * Recording / editing the optional image metadata
+* Tracking of number of in-flight image uploads

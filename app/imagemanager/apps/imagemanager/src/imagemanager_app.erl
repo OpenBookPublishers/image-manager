@@ -24,6 +24,7 @@ stop(_State) ->
 start_cowboy() ->
     Dispatch = cowboy_router:compile([
         {'_', [
+            {"/", api_h, []},
             {"/api/[...]", api_h, []},
             {"/images/[...]", api_h, []},
             {"/thumbnails/[...]", api_h, []},
@@ -31,7 +32,7 @@ start_cowboy() ->
             {"/public/[...]", cowboy_static, {priv_dir, imagemanager, "public"}}
         ]}
     ]),
-	{ok, _} = cowboy:start_clear(http, [{port, 8080}], #{
+    {ok, _} = cowboy:start_clear(http, [{port, 8080}], #{
          env => #{dispatch => Dispatch}
     }),
     ok.

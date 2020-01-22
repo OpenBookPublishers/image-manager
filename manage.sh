@@ -45,6 +45,9 @@ case "$1" in
     rebuild-client)
         (cd app/${APPNAME}/client && npm run build)
         ;;
+    install-client)
+        (cd app/${APPNAME}/client && ./postbuild.sh)
+        ;;
     install-client-deps)
         (cd app/${APPNAME}/client && npm install)
         ;;

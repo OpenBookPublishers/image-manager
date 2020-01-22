@@ -15,6 +15,12 @@ init(Req0, State) ->
     URI = cowboy_req:path(Req0),
     handle_req(Method, URI, Req0, State).
 
+handle_req(<<"GET">>, <<"/">>, Req0, State) ->
+    Resp = cowboy_req:reply(301,
+      #{
+         <<"Location">> => <<"/public/index.html">>
+       }, <<"">>, Req0),
+    {ok, Resp, State};
 
 handle_req(<<"GET">>, <<"/api/images">>, Req0, State) ->
     {ok, ImageData} = img_mgr_serv:all_images(),
@@ -26,17 +32,17 @@ handle_req(<<"GET">>, <<"/api/images">>, Req0, State) ->
     {ok, Resp, State};
 
 handle_req(<<"POST">>, <<"/api/upload">>, Req0, State) ->
-	{ok, Headers, Req2} = cowboy_req:read_part(Req0),
-	{ok, Data, Req3} = read_whole_file_upload(Req2),
-	{file, <<?PAYLOAD_FIELD>>, Filename, ContentType}
-		= cow_multipart:form_data(Headers),
+    {ok, Headers, Req2} = cowboy_req:read_part(Req0),
+    {ok, Data, Req3} = read_whole_file_upload(Req2),
+    {file, <<?PAYLOAD_FIELD>>, Filename, ContentType}
+        = cow_multipart:form_data(Headers),
     Chapter_Uuid = cowboy_req:header(<<?CHAPTER_FIELD>>, Req0),
     % this metadata structure is actually consumed in img_mgr_serv:save_image
     Metadata = {upload_metadata, Chapter_Uuid},
     Hash = bin_to_hex:bin_to_hex_string(crypto:hash(md5, Data)),
     {ok, _} = img_mgr_serv:receive_upload(Filename, Hash, Data,
                                           ContentType, Metadata),
-	{ok, Req3, State};
+    {ok, Req3, State};
 
 
 handle_req(<<"GET">>, <<"/images/", Hash/binary>>, Req0, State) ->
@@ -44,7 +50,7 @@ handle_req(<<"GET">>, <<"/images/", Hash/binary>>, Req0, State) ->
     C = util:db_connection(),
     Parameters = [Hash],
     {ok, _Cols, Rows} = epgsql:equery
-                    (C, "SELECT format FROM image WHERE hash = $1;", Parameters),
+      (C, "SELECT format FROM image WHERE hash = $1;", Parameters),
     epgsql:close(C),
     Resp =
         case Rows of

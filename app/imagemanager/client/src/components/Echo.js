@@ -104,7 +104,8 @@ class Echo extends React.Component {
   }
 
   connectWS() {
-    const url = "ws://" + window.location.host + "/websocket";
+    const tls = window.location.protocol.slice(4, -1);
+    const url = "ws" + tls + "://" + window.location.host + "/websocket";
   	this.connection = new WebSocket(url);
     this.connection.onmessage = evt => this.handleMsg(evt)
     this.connection.onerror = error => this.handleError(error)

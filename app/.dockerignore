@@ -1,1 +1,2 @@
-imagemanager/client/
+rebar3
+imagemanager/client/node_modules
