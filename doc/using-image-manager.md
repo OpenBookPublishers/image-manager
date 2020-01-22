@@ -44,7 +44,8 @@ To create a new instance of the image manager for a new book we need:
 * the number of chapters
 
 In the current version of the image manager, it takes five or ten minutes
-to set up a new instance.
+to set up a new instance. This can be obviated by reloading the webpage,
+either with the icon in the browser or, customarily, by pressing Ctrl-R.
 
 
 Background
