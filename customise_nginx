@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -eu
+
+HOSTNAME=$1
+IP=$2
+
+SOURCE=/etc/nginx/sites-available/images
+
+sed "s/staging.images/${HOSTNAME}.images/g" < $SOURCE | \
+sed "s/172.20.0.3/${IP}/g"
