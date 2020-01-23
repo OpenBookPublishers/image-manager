@@ -258,6 +258,7 @@ remove_image_from_db(Hash) ->
              {ok, _, []} -> ok; % image wasn't inserted in the first place
              {ok, _, [{Chapter_Uuid, Rank}]} ->
                  {ok, _, [{MR}]} = epgsql:equery(C, Stmt2, [Chapter_Uuid]),
+                 epgsql:equery(C, "DELETE FROM image_details WHERE hash = $1;", Parameters),
                  epgsql:equery(C, "DELETE FROM image WHERE hash = $1;", Parameters),
                  case MR of
                      null -> ok;
