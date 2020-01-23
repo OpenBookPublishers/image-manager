@@ -89,6 +89,34 @@ class EditImage extends Component {
             value={this.props.editor.image.licence_status}
             options={this.props.licences} />
 
+          <TextField
+            label='Original Artist'
+          ><Input
+             value={this.props.editor.image.orig_artist}
+             onChange={(e) => this.update('orig_artist', e)} />
+          </TextField>
+
+          <TextField
+            label='Original Year'
+          ><Input
+             value={this.props.editor.image.orig_year}
+             onChange={(e) => this.update('orig_year', e)} />
+          </TextField>
+
+          <TextField
+            label='Original Medium'
+          ><Input
+             value={this.props.editor.image.orig_medium}
+             onChange={(e) => this.update('orig_medium', e)} />
+          </TextField>
+
+          <TextField
+            label='Original Size'
+          ><Input
+             value={this.props.editor.image.orig_size}
+             onChange={(e) => this.update('orig_size', e)} />
+          </TextField>
+
         </DialogContent>
         <DialogFooter>
           <DialogButton action='cancel'>Cancel</DialogButton>

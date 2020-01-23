@@ -16,6 +16,13 @@ const makeImage = (detail) => {
         rank: detail.rank,
         figure_id: detail.figure_id,
         licence_status: detail.licence_status,
+        orig_artist: detail.orig_artist,
+        provenance: detail.provenance,
+        url: detail.url,
+        orig_year: detail.orig_year,
+        orig_medium: detail.orig_medium,
+        orig_title: detail.orig_title,
+        orig_size: detail.orig_size,
         completed: false
     }
 }

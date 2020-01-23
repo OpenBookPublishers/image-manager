@@ -25,7 +25,8 @@ create table image (
 );
 
 create table detail (
-       detail_type varchar(30) primary key
+       detail_type varchar(30) primary key,
+       detail_name varchar(30) not null
 );
 
 create table image_details (

@@ -18,6 +18,7 @@ broadcast_raw(Msg) ->
     gproc_ps:publish(l, ?SERVER, Msg).
 
 broadcast_json(Type, Details) ->
+    lager:info("TD: ~p ~p", [Type, Details]),
     broadcast_raw(encode_msg(Type, Details)).
 
 encode_msg(Type, Details) ->
@@ -118,7 +119,7 @@ update_image(Hash, Image) ->
     } = Image,
     Hash = Check_Hash,
     ok = img_mgr_serv:update_image_details(Hash, Chapter_Uuid, Caption,
-                                          Licence_Status),
+                                          Licence_Status, Image),
     encode_msg(message, "Image updated").
 
 set_rank(Hash, New_Rank) ->

@@ -12,6 +12,7 @@ const empty_image = {
   format: undefined,
   res_category: undefined,
   chapter_uuid: undefined,
+  orig_artist: undefined,
   completed: false
 }
 

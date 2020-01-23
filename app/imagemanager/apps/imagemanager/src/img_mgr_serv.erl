@@ -16,10 +16,22 @@
          terminate/2, code_change/3]).
 
 -export([receive_upload/5, set_image_details/6, remove_image/1, all_images/0,
-         all_chapters/0, all_licences/0, fail_image/2, update_image_details/4,
+         all_chapters/0, all_licences/0, fail_image/2, update_image_details/5,
          set_image_rank/2]).
 
 -define(SERVER, ?MODULE).
+
+% needs to match both DB and client app
+-define(OPTIONAL_KEYS,
+        [
+         "provenance",
+         "url",
+         "orig_artist",
+         "orig_year",
+         "orig_medium",
+         "orig_title",
+         "orig_size"
+        ]).
 
 -record(state, {}).
 
@@ -36,8 +48,8 @@ set_image_details(Hash, Format, Resolution, Res_Category, Filename, Metadata) ->
     gen_server:call(?SERVER, {set_details, Hash, Format, Resolution,
                               Res_Category, Filename, Metadata}).
 
-update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status) ->
-    gen_server:call(?SERVER, {update_details, Hash, Chapter_Uuid, Caption, Licence_Status}).
+update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image) ->
+    gen_server:call(?SERVER, {update_details, Hash, Chapter_Uuid, Caption, Licence_Status, Image}).
 
 fail_image(Hash, Reason) ->
     gen_server:call(?SERVER, {failed, Hash, Reason}).
@@ -84,9 +96,10 @@ handle_call({set_details, Hash, Format, Resolution, Res_Category, Filename, Meta
     Reply = ok,
     {reply, Reply, State};
 
-handle_call({update_details, Hash, Chapter_Uuid, Caption, Licence_Status},
+handle_call({update_details, Hash, Chapter_Uuid, Caption, Licence_Status,
+             Image},
             _From, State) ->
-    do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status),
+    do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image),
     Reply = ok,
     {reply, Reply, State};
 
@@ -284,8 +297,34 @@ all_licence_details() ->
     ),
     util:sql_result_to_map_list(Results).
 
-do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status) ->
+do_update_optional_detail(Hash, Detail_Name, Detail_Value) ->
+    Stmt1 = "DELETE FROM image_details WHERE hash = $1 AND detail_type = $2;",
+    Stmt2 = "INSERT INTO image_details (hash, detail_type, detail_value) VALUES ($1, $2, $3);",
+    Parameters1 = [Hash, Detail_Name],
+    Parameters2 = [Hash, Detail_Name, Detail_Value],
+    with_transaction(
+      fun(C) ->
+              epgsql:equery(C, Stmt1, Parameters1),
+              epgsql:equery(C, Stmt2, Parameters2)
+      end
+     ).
+
+try_update_optional_detail(Hash, Detail_Name, Image) ->
+    {ok, Detail_Value} = maps:find(Detail_Name, Image),
+    do_update_optional_detail(Hash, Detail_Name, Detail_Value),
+    {Detail_Name, Detail_Value}.
+
+map_has_key(Key, Map) ->
+    case maps:find(Key, Map) of
+        error -> false;
+        {ok, _Value} -> true
+    end.
+
+do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image) ->
     Stmt1 = "UPDATE image SET chapter_uuid = $1, image_name = $2, licence_status = $3 WHERE hash = $4;",
+
+    lager:info("ui: ~p", [Image]),
+
     Parameters1 = [Chapter_Uuid, Caption, Licence_Status, Hash],
     Stmt2 = "SELECT * FROM image_chapter WHERE hash = $1;",
     Parameters2 = [Hash],
@@ -296,7 +335,12 @@ do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status) ->
                 end),
     Results2 = util:sql_result_to_map_list(Results),
     [Updates|[]] = Results2,
-    img_mgr_proto:update_image(Updates),
+    Optional_Updates = [ try_update_optional_detail(Hash, Key, Image)
+                         || Key <- ?OPTIONAL_KEYS, map_has_key(Key, Image) ],
+    lager:info("Updates: ~p", [Updates]),
+    lager:info("Optional Updates: ~p", [Optional_Updates]),
+    Updates2 = maps:merge(Updates, maps:from_list(Optional_Updates)),
+    img_mgr_proto:update_image(Updates2),
     ok.
     %% TODO: need to notify the client of error
 
