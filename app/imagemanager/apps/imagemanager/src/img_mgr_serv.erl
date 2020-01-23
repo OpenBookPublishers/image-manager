@@ -24,13 +24,13 @@
 % needs to match both DB and client app
 -define(OPTIONAL_KEYS,
         [
-         "provenance",
-         "url",
-         "orig_artist",
-         "orig_year",
-         "orig_medium",
-         "orig_title",
-         "orig_size"
+         <<"provenance">>,
+         <<"url">>,
+         <<"orig_artist">>,
+         <<"orig_year">>,
+         <<"orig_medium">>,
+         <<"orig_title">>,
+         <<"orig_size">>
         ]).
 
 -record(state, {}).

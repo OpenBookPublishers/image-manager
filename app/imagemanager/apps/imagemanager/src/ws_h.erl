@@ -49,46 +49,53 @@ websocket_info({gproc_ps_event, ?SERVER, Echo}, State) ->
 websocket_info(_Info, State) ->
 	{ok, State}.
 
+json_error() ->
+    zj:encode(#{ type => "error",
+                          details => "JSON not decoded" }).
+
 handle_text(Msg) ->
-    case zj:decode(Msg) of
+    lager:info("Msg: ~p", [Msg]),
+    try zj:binary_decode(Msg) of
         {ok, Term} -> handle_json(Term);
-        _ -> zj:encode(#{ type => "error",
-                          details => "JSON not decoded" })
+        _ -> json_error()
+    catch 
+        _ -> json_error()
     end.
 
-handle_json(#{ "event" := "get_all_images" }) ->
+handle_json(#{ <<"event">> := <<"get_all_images">> }) ->
     get_all_images();
 
-handle_json(#{ "event" := "get_all_chapters" }) ->
+handle_json(#{ <<"event">> := <<"get_all_chapters">> }) ->
     get_all_chapters();
 
-handle_json(#{ "event" := "get_all_licences" }) ->
+handle_json(#{ <<"event">> := <<"get_all_licences">> }) ->
     get_all_licences();
 
-handle_json(#{ "event" := "delete_image",
-               "details" := #{
-                 "hash" := Hash
+handle_json(#{ <<"event">> := <<"delete_image">>,
+               <<"details">> := #{
+                 <<"hash">> := Hash
                 }
              }) ->
-    delete_image(Hash);
+    delete_image(binary_to_list(Hash));
 
-handle_json(#{ "event" := "update_image",
-               "details" := #{
-                 "hash" := Hash,
-                 "image" := Image
+handle_json(#{ <<"event">> := <<"update_image">>,
+               <<"details">> := #{
+                 <<"hash">> := Hash,
+                 <<"image">> := Image
                 }
              }) ->
-    update_image(Hash, Image);
+    update_image(binary_to_list(Hash), Image);
 
-handle_json(#{ "event" := "set_rank",
-               "details" := #{
-                 "hash" := Hash,
-                 "rank" := New_Rank
+handle_json(#{ <<"event">> := <<"set_rank">>,
+               <<"details">> := #{
+                 <<"hash">> := Hash,
+                 <<"rank">> := New_Rank
                 }
              }) ->
-    set_rank(Hash, New_Rank);
+    set_rank(binary_to_list(Hash), New_Rank);
 
-handle_json(_Term) ->
+handle_json(Term) ->
+    lager:info("Term: ~p", [Term]),
     encode_msg(message, "JSON decoded but not understood").
 
 
@@ -112,14 +119,18 @@ delete_image(Hash) ->
 
 update_image(Hash, Image) ->
     #{
-       "chapter_uuid" := Chapter_Uuid,
-       "id" := Check_Hash,
-       "text" := Caption,
-       "licence_status" := Licence_Status
+       <<"chapter_uuid">> := Chapter_Uuid,
+       <<"id">> := Check_Hash,
+       <<"text">> := Caption,
+       <<"licence_status">> := Licence_Status
     } = Image,
-    Hash = Check_Hash,
-    ok = img_mgr_serv:update_image_details(Hash, Chapter_Uuid, Caption,
-                                          Licence_Status, Image),
+    Hash = binary_to_list(Check_Hash),
+    ok = img_mgr_serv:update_image_details(
+           Hash,
+           Chapter_Uuid,
+           Caption,
+           Licence_Status,
+           Image),
     encode_msg(message, "Image updated").
 
 set_rank(Hash, New_Rank) ->
