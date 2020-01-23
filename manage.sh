@@ -6,6 +6,7 @@ CONTAINER_BASE=$APPNAME
 CONTAINER_BASE=$(basename $(pwd -P))
 TAG=base-im
 PGUSER=$USER
+DBUSER=willwork
 
 set -eu
 cd $(dirname $0)
@@ -18,7 +19,7 @@ usage () {
 
 cleardb () { 
     docker exec -it ${APPNAME}_db_1 \
-        psql -U $PGUSER starter -c 'delete from image;'
+        psql -U $DBUSER starter -c 'delete from image;'
 }
 
 clearcache () {
@@ -74,7 +75,7 @@ case "$1" in
         docker exec -it ${CONTAINER_BASE}_web_1 sh
         ;;
     psql)
-        docker exec -it ${CONTAINER_BASE}_db_1 psql -U $USER starter
+        docker exec -it ${CONTAINER_BASE}_db_1 psql -U $DBUSER starter
         ;;
     refresh-schema)
         docker-compose down || true
