@@ -1,0 +1,100 @@
+* further steps
+** TODO get a config file with
+*** master URL
+*** author ID
+*** database creds
+** TODO formalise client-side dev into scripts
+** TODO use docker-compose exec in manage.sh
+** TODO add optional fields and placeholder toggle
+*** TODO plumb optional fields back to UI
+** TODO create downloadable archive
+** TODO "suggested size" - add this to metadata fields
+** TODO title of book should show up somewhere
+** TODO not clear what the resolution algorithm should say
+** TODO support URL in DM
+** TODO document protocol
+** TODO document architecture
+** TODO concept guide
+** TODO BTDI lint results
+** TODO BTDI support imageset in data model
+** TODO propagate certain server problems to client via notices
+** TODO ws autoreconnect: incremental backoff
+** TODO there should be a "loading" spinner before initial state
+** TODO the metadata is propagated slightly wrongly before thumbnail creation
+** TODO the visibility filter isn't exactly right at the start
+** TODO sort out debugging client-side
+** TODO persist the default chapter with a cookie?
+** TODO track how many jobs are in-flight
+** TODO plumb filenames through to error messages about invalid formats
+** TODO replace ".id" with ".hash" in client
+* bugs
+** TODO insufficient feedback when uploading large amounts of stuff
+** TODO caption is set too late, once thumbnail is done
+** TODO there seems to be some kind of "auto reset to first chapter" thing
+** TODO you can get an unhandled {error,enoent} in api_h:handle_req/4 line 60
+** TODO edit button sometimes doesn't work
+* done
+** DONE regenerate sequences
+** DONE disallow images with wrong format
+** DONE caching
+** DONE categorise resolution
+** DONE provide for copyright status enumeration
+** DONE integrate Select with redux
+** DONE navigation between chapters
+** DONE display only images relating to particular chapter
+** DONE support rescat in DM
+** DONE delete images plumbed back through
+** DONE pull chapter data from server
+** DONE handle very large files
+** DONE support chapters in data model
+** DONE popup dialog
+** DONE normal redux to integrate Dialog / EditImage
+** DONE work out what is wrong with <Select />
+** DONE support captions in dm
+** DONE rename todos
+** DONE edit caption
+** DONE use db transactions
+** DONE ordinals
+** DONE fix update of existing images
+** DONE reorder images
+** DONE changeRank()
+** DONE plumb ranking buttons through to echo client
+** DONE reorder images in a chapter
+** DONE chapter IDs for sequences
+** DONE parameterise the database name
+** DONE fix header of EditImage
+** DONE edit copyright status
+** DONE re-rank on delete
+** DONE co-ordinate three copies of (c) status
+** DONE notifications via react
+** DONE document release process
+** DONE add a help PDF
+** DONE work out how to do abbreviated client-side development
+* urls
+** https://github.com/material-components/material-components-web-react
+** see https://material.io/resources/icons/ for more icons
+* changeRank()
+
+renumber(oldindex, newindex) :-
+  if oldindex == newindex:
+    return
+
+  bigid = max(index)
+
+  update index set index = -1 where index = oldindex
+
+  if oldindex < newindex:
+    update index set index = bigid + index
+      where index >= oldindex + 1
+        and index <= newindex
+    update index set index = index - bigid - 1
+      where index >= bigid
+  else:
+    update index set index = bigid + index
+      where index >= newindex
+        and index <= oldindex
+    update index set index = index - bigid + 1
+      where index >= bigid
+
+  update index set index = newindex
+    where index = -1
