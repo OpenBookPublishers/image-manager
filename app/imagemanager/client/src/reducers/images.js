@@ -23,6 +23,7 @@ const makeImage = (detail) => {
         orig_medium: detail.orig_medium,
         orig_title: detail.orig_title,
         orig_size: detail.orig_size,
+        orig_title: detail.orig_title,
         completed: false
     }
 }

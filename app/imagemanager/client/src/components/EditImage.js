@@ -58,6 +58,8 @@ class EditImage extends Component {
 
   render() {
 
+// needs to match reducers/images.js
+
 // thumbnail
 // caption
 // licence
@@ -115,6 +117,20 @@ class EditImage extends Component {
           ><Input
              value={this.props.editor.image.orig_size}
              onChange={(e) => this.update('orig_size', e)} />
+          </TextField>
+
+          <TextField
+            label='Original Title'
+          ><Input
+             value={this.props.editor.image.orig_title}
+             onChange={(e) => this.update('orig_title', e)} />
+          </TextField>
+
+          <TextField
+            label='External URL'
+          ><Input
+             value={this.props.editor.image.url}
+             onChange={(e) => this.update('url', e)} />
           </TextField>
 
         </DialogContent>
