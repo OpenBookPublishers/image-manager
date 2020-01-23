@@ -37,7 +37,9 @@ to focus on the first chapter.
 BUG: Sometimes the edit icon does not work. This can be obviated by
 reloading the webpage, either with the icon in the browser or,
 customarily, by pressing Ctrl-R, and then clicking the icon again.
-
+It appears that this bug may be triggered by clicking outside the Edit dialog
+box (rather than clicking Save or Cancel), so always click Save or Cancel
+when editing the metadata.
 
 Initialisation
 --------------
