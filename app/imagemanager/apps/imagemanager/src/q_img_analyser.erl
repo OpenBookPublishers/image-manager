@@ -82,7 +82,7 @@ process_image_details(Hash, Result, Filename, Metadata) ->
     case {format:allowed(Format), resolution:category(Resolution)} of
         {false, _} -> img_mgr_serv:fail_image(
                         Hash, "Image format not allowed: " ++ Format);
-        {_, {rejected, Reason}} -> img_mgr_serv:fail_image(Hash, Reason);
+%       {_, {rejected, Reason}} -> img_mgr_serv:fail_image(Hash, Reason);
         {_, {ok, Res_Category}} ->
             q_img_thumbnail:submit({Hash, Format, Resolution,
                                     Res_Category,
