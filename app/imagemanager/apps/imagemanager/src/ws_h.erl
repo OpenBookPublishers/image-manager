@@ -94,7 +94,7 @@ handle_json(#{ <<"event">> := <<"set_rank">>,
              }) ->
     set_rank(binary_to_list(Hash), New_Rank);
 
-handle_json(Term) ->
+handle_json(_Term) ->
     encode_msg(message, <<"JSON decoded but not understood">>).
 
 
