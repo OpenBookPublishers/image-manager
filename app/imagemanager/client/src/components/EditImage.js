@@ -133,6 +133,13 @@ class EditImage extends Component {
              onChange={(e) => this.update('url', e)} />
           </TextField>
 
+          <TextField
+            label='Provenance'
+          ><Input
+             value={this.props.editor.image.provenance}
+             onChange={(e) => this.update('provenance', e)} />
+          </TextField>
+
         </DialogContent>
         <DialogFooter>
           <DialogButton action='cancel'>Cancel</DialogButton>
