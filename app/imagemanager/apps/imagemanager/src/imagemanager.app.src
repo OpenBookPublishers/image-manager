@@ -11,7 +11,8 @@
     epgsql,
     gproc,
     lager,
-    zj
+    zj,
+    jsx
    ]},
   {env,[]},
   {modules, []},
