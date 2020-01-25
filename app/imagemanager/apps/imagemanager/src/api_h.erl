@@ -114,6 +114,5 @@ read_whole_file_upload(Req2, Acc) ->
         {more, NewData, Req3} ->
             read_whole_file_upload(Req3, <<Acc/binary, NewData/binary>>);
         {ok, FinalData, Req3} ->
-            {ok, <<Acc/binary, FinalData/binary>>, Req3};
-        _ -> chunked_upload_failed
+            {ok, <<Acc/binary, FinalData/binary>>, Req3}
     end.
