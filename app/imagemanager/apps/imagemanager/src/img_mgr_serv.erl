@@ -41,7 +41,9 @@
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
-receive_upload(Filename, Hash, Data, MimeType, Metadata) ->
+receive_upload(Filename, Hash, Data, MimeType, Metadata)
+  when is_binary(Filename), is_binary(Hash), is_binary(Data),
+       is_binary(MimeType) ->
     gen_server:call(?SERVER, {upload, Filename, Hash, Data, MimeType, Metadata}).
 
 set_image_details(Hash, Format, Resolution, Res_Category, Filename, Metadata) ->
@@ -51,10 +53,10 @@ set_image_details(Hash, Format, Resolution, Res_Category, Filename, Metadata) ->
 update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image) ->
     gen_server:call(?SERVER, {update_details, Hash, Chapter_Uuid, Caption, Licence_Status, Image}).
 
-fail_image(Hash, Reason) ->
+fail_image(Hash, Reason) when is_binary(Hash) ->
     gen_server:call(?SERVER, {failed, Hash, Reason}).
 
-remove_image(Hash) ->
+remove_image(Hash) when is_binary(Hash) ->
     gen_server:call(?SERVER, {remove_image, Hash}).
 
 all_images() ->
@@ -183,7 +185,12 @@ with_transaction(F) ->
     end.
 
 % the metadata structure is actually defined in api_h.erl
-save_image(Hash, Format, Resolution, Res_Category, Filename, Metadata) ->
+save_image(Hash, Format, Resolution, Res_Category, Filename, Metadata)
+  when is_binary(Hash),
+       is_binary(Format),
+       is_list(Resolution),
+       is_binary(Filename)
+       ->
     {upload_metadata, Chapter_Uuid} = Metadata,
     %% NB "rank" needs to be last
     Query =
@@ -230,14 +237,14 @@ save_image_transaction(C, Query, Chapter_Uuid, Parameters) ->
     {Rank, epgsql:equery(C, Query, Parameters2)}.
 
 
-do_fail_image(Hash, Reason) ->
+do_fail_image(Hash, Reason) when is_binary(Hash) ->
     lager:info("Failed image (~p): ~p", [Hash, Reason]),
     Notice = "Image upload failed: " ++ Reason,
     img_mgr_proto:notice(Notice),
     do_remove_image(Hash).
 
 
-do_remove_image(Hash) ->
+do_remove_image(Hash) when is_binary(Hash) ->
     img_mgr_proto:remove_image(Hash),
     [ file:delete(filename:join(Dir, Hash)) || Dir <- [util:upload_dir(),
                                                        util:thumbnail_dir()] ],
@@ -249,7 +256,7 @@ do_remove_image(Hash) ->
 % get the max rank of the images in its chapter
 % if the max rank > rank of image to be deleted,
 %   then demote images (deleted + 1, max_rank)
-remove_image_from_db(Hash) ->
+remove_image_from_db(Hash) when is_binary(Hash) ->
     Stmt1 = "SELECT chapter_uuid, rank FROM image WHERE hash = $1;",
     Stmt2 = "SELECT MAX(rank) FROM image WHERE chapter_uuid = $1;",
     Parameters = [Hash],

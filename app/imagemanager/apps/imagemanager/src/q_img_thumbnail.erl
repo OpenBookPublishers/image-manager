@@ -62,12 +62,14 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 
-run(Hash, Format, Resolution, Res_Category, Filename, Metadata) ->
+run(Hash, Format, Resolution, Res_Category, Filename, Metadata)
+  when is_binary(Hash), is_binary(Format), is_list(Resolution),
+       is_binary(Filename) ->
     Timeout = 10 * 1000,
     Dir = util:upload_dir(),
-    Path = filename:join(Dir, Hash),
+    Path = binary_to_list(filename:join(Dir, Hash)),
     Output_Dir = util:thumbnail_dir(),
-    Output_Path = filename:join(Output_Dir, Hash),
+    Output_Path = binary_to_list(filename:join(Output_Dir, Hash)),
 %    Thumb_Resolution = "128x128!",
     Thumb_Resolution = "64x64!",
     Command = "convert -thumbnail " ++ Thumb_Resolution ++ " " ++ Path ++ "[0] png:" ++ Output_Path,

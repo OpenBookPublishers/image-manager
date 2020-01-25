@@ -62,11 +62,11 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 
-run(Hash, Filename, Metadata) ->
+run(Hash, Filename, Metadata) when is_binary(Hash), is_binary(Filename) ->
     Timeout = 10 * 1000,
     Dir = util:upload_dir(),
     Path = filename:join(Dir, Hash),
-    Command = "identify " ++ Path,
+    Command = "identify " ++ binary_to_list(Path),
     try shellcmd:run(Command, Timeout) of
         Result ->
             process_image_details(Hash, Result, Filename, Metadata)

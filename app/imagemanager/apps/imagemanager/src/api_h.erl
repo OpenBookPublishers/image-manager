@@ -39,7 +39,7 @@ handle_req(<<"POST">>, <<"/api/upload">>, Req0, State) ->
     Chapter_Uuid = cowboy_req:header(<<?CHAPTER_FIELD>>, Req0),
     % this metadata structure is actually consumed in img_mgr_serv:save_image
     Metadata = {upload_metadata, Chapter_Uuid},
-    Hash = bin_to_hex:bin_to_hex_string(crypto:hash(md5, Data)),
+    Hash = bin_to_hex:bin_to_hex(crypto:hash(md5, Data)),
     {ok, _} = img_mgr_serv:receive_upload(Filename, Hash, Data,
                                           ContentType, Metadata),
     {ok, Req3, State};

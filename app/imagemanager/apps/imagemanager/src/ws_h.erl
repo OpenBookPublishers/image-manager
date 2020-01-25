@@ -26,7 +26,7 @@ encode_msg(Type, Details) ->
       type => Type,
       details => Details
     },
-    zj:encode(Object).
+    jsx:encode(Object).
 
 init(Req, Opts) ->
     Timeout_Secs = 300,
@@ -54,13 +54,13 @@ json_error() ->
                           details => "JSON not decoded" }).
 
 handle_text(Msg) ->
-    lager:info("Msg: ~p", [Msg]),
-    try zj:binary_decode(Msg) of
-        {ok, Term} -> handle_json(Term);
-        _ -> json_error()
-    catch 
-        _ -> json_error()
-    end.
+    Result = try zj:binary_decode(Msg) of
+                 {ok, Term} -> handle_json(Term);
+                 _ -> json_error()
+             catch
+                 _ -> json_error()
+             end,
+    Result.
 
 handle_json(#{ <<"event">> := <<"get_all_images">> }) ->
     get_all_images();
@@ -76,7 +76,7 @@ handle_json(#{ <<"event">> := <<"delete_image">>,
                  <<"hash">> := Hash
                 }
              }) ->
-    delete_image(binary_to_list(Hash));
+    delete_image(Hash);
 
 handle_json(#{ <<"event">> := <<"update_image">>,
                <<"details">> := #{
@@ -95,8 +95,7 @@ handle_json(#{ <<"event">> := <<"set_rank">>,
     set_rank(binary_to_list(Hash), New_Rank);
 
 handle_json(Term) ->
-    lager:info("Term: ~p", [Term]),
-    encode_msg(message, "JSON decoded but not understood").
+    encode_msg(message, <<"JSON decoded but not understood">>).
 
 
 get_all_images() ->
@@ -111,10 +110,10 @@ get_all_licences() ->
     {ok, LicenceData} = img_mgr_serv:all_licences(),
     encode_msg(all_licences, LicenceData).
 
-delete_image(Hash) ->
+delete_image(Hash) when is_binary(Hash) ->
     case img_mgr_serv:remove_image(Hash) of
-        ok -> encode_msg(message, "Image deletion request submitted");
-        _ -> encode_msg(message, "Error deleting image")
+        ok -> encode_msg(message, <<"Image deletion request submitted">>);
+        _ -> encode_msg(message, <<"Error deleting image">>)
     end.
 
 update_image(Hash, Image) ->
@@ -131,12 +130,12 @@ update_image(Hash, Image) ->
            Caption,
            Licence_Status,
            Image),
-    encode_msg(message, "Image updated").
+    encode_msg(message, <<"Image updated">>).
 
 set_rank(Hash, New_Rank) ->
     case img_mgr_serv:set_image_rank(Hash, New_Rank) of
-        {ok, ok} -> encode_msg(message, "New rank requested");
+        {ok, ok} -> encode_msg(message, <<"New rank requested">>);
         Fail -> lager:info("set rank failed: ~p", [Fail]),
-                encode_msg(message, "New rank failed")
+                encode_msg(message, <<"New rank failed">>)
     end.
 

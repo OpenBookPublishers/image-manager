@@ -37,7 +37,7 @@ create_file(Hash) ->
      },
     broadcast(create, Details).
 
-remove_image(Hash) ->
+remove_image(Hash) when is_binary(Hash) ->
     Details = #{
       hash => Hash
      },
