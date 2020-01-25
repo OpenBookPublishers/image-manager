@@ -57,12 +57,18 @@ handle_req(<<"GET">>, <<"/images/", Hash/binary>>, Req0, State) ->
         [] -> not_found(Req0);
         [{Format}|[]] ->
                 {ok, MimeType} = format:mime_type(Format),
-                {ok, Payload} = file:read_file(Path),
-                cowboy_req:reply(
-                  200,
-                  #{
-                    <<"Content-type">> => MimeType
-                   }, Payload, Req0)
+                case file:read_file(Path) of
+                    {ok, Payload} ->
+                        cowboy_req:reply(
+                          200,
+                          #{
+                            <<"Content-type">> => MimeType
+                           }, Payload, Req0);
+                    {error,enoent} ->
+                        cowboy_req:reply(
+                          404,
+                          #{}, "Not found", Req0)
+                end
         end,
     {ok, Resp, State};
 
