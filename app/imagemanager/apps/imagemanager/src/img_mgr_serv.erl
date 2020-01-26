@@ -288,8 +288,9 @@ create_file(Hash, Path, Data, Filename, _MimeType, Metadata) ->
     {ok, created}.
 
 all_image_details() ->
+    Stmt1 = "SELECT * FROM image_chapter ORDER BY rank;",
     Results = with_db_connection(
-                fun(C) -> epgsql:equery(C, "SELECT * FROM image_chapter order by rank;", []) end
+                fun(C) -> epgsql:equery(C, Stmt1, []) end
     ),
     util:sql_result_to_map_list(Results).
 
