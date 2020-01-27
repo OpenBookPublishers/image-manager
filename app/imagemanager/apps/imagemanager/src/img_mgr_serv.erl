@@ -311,12 +311,11 @@ do_update_optional_detail(Hash, Detail_Name, Detail_Value) ->
     Stmt2 = "INSERT INTO image_details (hash, detail_type, detail_value) VALUES ($1, $2, $3);",
     Parameters1 = [Hash, Detail_Name],
     Parameters2 = [Hash, Detail_Name, Detail_Value],
-    with_transaction(
+    {ok, _} = with_transaction(
       fun(C) ->
               epgsql:equery(C, Stmt1, Parameters1),
               epgsql:equery(C, Stmt2, Parameters2)
-      end
-     ).
+      end).
 
 try_update_optional_detail(Hash, Detail_Name, Image) ->
     {ok, Detail_Value} = maps:find(Detail_Name, Image),
