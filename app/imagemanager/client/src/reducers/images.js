@@ -16,14 +16,14 @@ const makeImage = (detail) => {
         rank: detail.rank,
         figure_id: detail.figure_id,
         licence_status: detail.licence_status,
-        orig_artist: detail.orig_artist,
-        provenance: detail.provenance,
-        url: detail.url,
-        orig_year: detail.orig_year,
-        orig_medium: detail.orig_medium,
-        orig_title: detail.orig_title,
-        orig_size: detail.orig_size,
-        orig_title: detail.orig_title,
+        orig_artist: detail.optional.orig_artist,
+        provenance: detail.optional.provenance,
+        url: detail.optional.url,
+        orig_year: detail.optional.orig_year,
+        orig_medium: detail.optional.orig_medium,
+        orig_title: detail.optional.orig_title,
+        orig_size: detail.optional.orig_size,
+        orig_title: detail.optional.orig_title,
         completed: false
     }
 }

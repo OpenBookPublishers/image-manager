@@ -19,6 +19,8 @@
          all_chapters/0, all_licences/0, fail_image/2, update_image_details/5,
          set_image_rank/2]).
 
+-export([all_optional_details/0]).
+
 -define(SERVER, ?MODULE).
 
 % needs to match both DB and client app
@@ -287,12 +289,16 @@ create_file(Hash, Path, Data, Filename, _MimeType, Metadata) ->
     img_mgr_proto:create_file(Hash),
     {ok, created}.
 
+% technically should all be in the same db transaction
 all_image_details() ->
     Stmt1 = "SELECT * FROM image_chapter ORDER BY rank;",
     Results = with_db_connection(
                 fun(C) -> epgsql:equery(C, Stmt1, []) end
     ),
-    util:sql_result_to_map_list(Results).
+    Images = util:sql_result_to_map_list(Results),
+    Optionals = all_optional_details(),
+    [ I#{ <<"optional">> => maps:get(Hash, Optionals, []) }
+      || I = #{ <<"hash">> := Hash } <- Images ].
 
 all_chapter_details() ->
     Results = with_db_connection(
@@ -305,6 +311,19 @@ all_licence_details() ->
                 fun(C) -> epgsql:equery(C, "SELECT * from copyright;", []) end
     ),
     util:sql_result_to_map_list(Results).
+
+image_optional_details(Hash, All_Image_Details) ->
+    This_Image_Details = lists:filter(fun(I) -> {HC,_,_} = I, HC == Hash end,
+                                          All_Image_Details),
+    [ {K, V} || {_, K, V} <- This_Image_Details ].
+
+all_optional_details() ->
+    Sql = "SELECT * FROM image_details;",
+    {ok, _H, Results} = with_db_connection(
+                          fun(C) -> epgsql:equery(C, Sql, []) end
+                         ),
+    Hashes = util:unique_list([ Hash || {Hash, _, _} <- Results ]),
+    maps:from_list([ {H, image_optional_details(H, Results)} || H <- Hashes ]).
 
 do_update_optional_detail(Hash, Detail_Name, Detail_Value) ->
     Stmt1 = "DELETE FROM image_details WHERE hash = $1 AND detail_type = $2;",

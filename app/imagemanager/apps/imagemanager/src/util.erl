@@ -5,6 +5,7 @@
 -export([file_exists/1]).
 -export([db_connection/0]).
 -export([sql_result_to_map_list/1]).
+-export([unique_list/1]).
 
 upload_dir() ->
     case os:getenv("UPLOAD_PATH") of
@@ -42,3 +43,9 @@ sql_result_to_map_list({ok, Cols, Rows}) ->
     ColNames = [ ColName || {column, ColName, _, _, _, _, _} <- Cols ],
     Tmp = [ lists:zip(ColNames, tuple_to_list(Row)) || Row <- Rows ],
     [ maps:from_list(R) || R <- Tmp ].
+
+unique_list(LL) ->
+    Intermediate = lists:foldl(fun(I, Acc) ->
+                                       sets:add_element(I, Acc)
+                               end, sets:new(), LL),
+    sets:to_list(Intermediate).
