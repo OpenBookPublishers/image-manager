@@ -30,9 +30,10 @@ create table detail (
 );
 
 create table image_details (
-       hash varchar(50) primary key references image(hash),
+       hash varchar(50) references image(hash),
        detail_type varchar(30) not null references detail(detail_type),
-       detail_value text not null
+       detail_value text not null,
+       unique (hash, detail_type)
 );
        
 create view image_chapter as
