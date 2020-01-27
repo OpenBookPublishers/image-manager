@@ -366,7 +366,7 @@ do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image) ->
                          || Key <- ?OPTIONAL_KEYS, map_has_key(Key, Image) ],
     lager:info("Updates: ~p", [Updates]),
     lager:info("Optional Updates: ~p", [Optional_Updates]),
-    Updates2 = maps:merge(Updates, maps:from_list(Optional_Updates)),
+    Updates2 = Updates#{ optional => maps:from_list(Optional_Updates) },
     img_mgr_proto:update_image(Updates2),
     ok.
     %% TODO: need to notify the client of error

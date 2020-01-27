@@ -6,7 +6,7 @@
 // it under the terms of the Apache Licence v2.0.
 
 const makeImage = (detail) => {
-    return {
+    const img = {
         id: detail.hash,
         text: detail.image_name,
         resolution: detail.resolution,
@@ -16,15 +16,23 @@ const makeImage = (detail) => {
         rank: detail.rank,
         figure_id: detail.figure_id,
         licence_status: detail.licence_status,
-        orig_artist: detail.optional.orig_artist,
-        provenance: detail.optional.provenance,
-        url: detail.optional.url,
-        orig_year: detail.optional.orig_year,
-        orig_medium: detail.optional.orig_medium,
-        orig_title: detail.optional.orig_title,
-        orig_size: detail.optional.orig_size,
-        orig_title: detail.optional.orig_title,
         completed: false
+    };
+    if(detail.optional) {
+        console.log("optional details supplied");
+        return {
+            ...img,
+            orig_artist: detail.optional.orig_artist,
+            provenance: detail.optional.provenance,
+            url: detail.optional.url,
+            orig_year: detail.optional.orig_year,
+            orig_medium: detail.optional.orig_medium,
+            orig_title: detail.optional.orig_title,
+            orig_size: detail.optional.orig_size,
+            orig_title: detail.optional.orig_title
+        }
+    } else {
+        return img;
     }
 }
 
