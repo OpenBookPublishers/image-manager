@@ -30,14 +30,14 @@ file_exists(Filename) ->
         {error, enoent} -> true;
         _ -> false
     end.
-            
+
 db_connection() ->
     Hostname = os:getenv("PGHOST"),
     Username = os:getenv("PGUSER"),
     Database = os:getenv("PGNAME"),
     DB_Opts = #{ database => Database },
     {ok, C} = epgsql:connect(Hostname, Username, DB_Opts),
-    C.    
+    C.
 
 sql_result_to_map_list({ok, Cols, Rows}) ->
     ColNames = [ ColName || {column, ColName, _, _, _, _, _} <- Cols ],
