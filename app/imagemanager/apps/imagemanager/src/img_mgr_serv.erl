@@ -54,7 +54,8 @@ set_image_details(Hash, Format, Resolution, Res_Category, Filename, Metadata) ->
     gen_server:call(?SERVER, {set_details, Hash, Format, Resolution,
                               Res_Category, Filename, Metadata}).
 
-update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image) ->
+update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image)
+  when is_binary(Hash) ->
     gen_server:call(?SERVER, {update_details, Hash, Chapter_Uuid, Caption, Licence_Status, Image}).
 
 fail_image(Hash, Reason) when is_binary(Hash) ->
@@ -72,7 +73,8 @@ all_chapters() ->
 all_licences() ->
     gen_server:call(?SERVER, all_licences).
 
-set_image_rank(Hash, NewRank) ->
+set_image_rank(Hash, NewRank)
+  when is_binary(Hash) ->
     gen_server:call(?SERVER, {set_image_rank, Hash, NewRank}).
 
 
@@ -346,28 +348,22 @@ map_has_key(Key, Map) ->
         {ok, _Value} -> true
     end.
 
-do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image) ->
+do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image)
+  when is_binary(Hash) ->
     Stmt1 = "UPDATE image SET chapter_uuid = $1, image_name = $2, licence_status = $3 WHERE hash = $4;",
-
-    lager:info("ui: ~p", [Image]),
 
     Parameters1 = [Chapter_Uuid, Caption, Licence_Status, Hash],
     Stmt2 = "SELECT * FROM image_chapter WHERE hash = $1;",
     Parameters2 = [Hash],
-    {Results2, Optional_Updates} = with_transaction(
+    with_transaction(
                 fun(C) ->
                         epgsql:equery(C, Stmt1, Parameters1),
                         Results = epgsql:equery(C, Stmt2, Parameters2),
-                        Results2 = util:sql_result_to_map_list(Results),
-                        Optional_Updates = [
+                        util:sql_result_to_map_list(Results),
+                        [
                           try_update_optional_detail(C, Hash, Key, Image)
-                        || Key <- ?OPTIONAL_KEYS, map_has_key(Key, Image) ],
-                        {Results2, Optional_Updates}
+                        || Key <- ?OPTIONAL_KEYS, map_has_key(Key, Image) ]
                 end),
-    % need Results2
-    [Updates|[]] = Results2,
-    lager:info("Updates: ~p", [Updates]),
-    lager:info("Optional Updates: ~p", [Optional_Updates]),
     dispatch_image_data(Hash),
     ok.
     %% TODO: need to notify the client of error
@@ -494,8 +490,5 @@ image_data(C, Hash) when is_binary(Hash) ->
     Acceptability = acceptability(Data),
     Data#{ acceptability => Acceptability }.
 
-dispatch_image_data(Hash) ->
+dispatch_image_data(Hash) when is_binary(Hash) ->
     img_mgr_proto:update_image(image_data(Hash)).
-
-%dispatch_image_data(C, Hash) ->
-%    img_mgr_proto:update_image(image_data(C, Hash)).
