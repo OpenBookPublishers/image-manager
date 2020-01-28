@@ -84,7 +84,7 @@ handle_json(#{ <<"event">> := <<"update_image">>,
                  <<"image">> := Image
                 }
              }) ->
-    update_image(binary_to_list(Hash), Image);
+    update_image(Hash, Image);
 
 handle_json(#{ <<"event">> := <<"set_rank">>,
                <<"details">> := #{
@@ -92,7 +92,7 @@ handle_json(#{ <<"event">> := <<"set_rank">>,
                  <<"rank">> := New_Rank
                 }
              }) ->
-    set_rank(binary_to_list(Hash), New_Rank);
+    set_rank(Hash, New_Rank);
 
 handle_json(_Term) ->
     encode_msg(message, <<"JSON decoded but not understood">>).
@@ -116,14 +116,15 @@ delete_image(Hash) when is_binary(Hash) ->
         _ -> encode_msg(message, <<"Error deleting image">>)
     end.
 
-update_image(Hash, Image) ->
+update_image(Hash, Image)
+  when is_binary(Hash) ->
     #{
        <<"chapter_uuid">> := Chapter_Uuid,
        <<"id">> := Check_Hash,
        <<"text">> := Caption,
        <<"licence_status">> := Licence_Status
     } = Image,
-    Hash = binary_to_list(Check_Hash),
+    Hash = Check_Hash,
     ok = img_mgr_serv:update_image_details(
            Hash,
            Chapter_Uuid,
@@ -132,7 +133,8 @@ update_image(Hash, Image) ->
            Image),
     encode_msg(message, <<"Image updated">>).
 
-set_rank(Hash, New_Rank) ->
+set_rank(Hash, New_Rank)
+  when is_binary(Hash), is_integer(New_Rank) ->
     case img_mgr_serv:set_image_rank(Hash, New_Rank) of
         {ok, ok} -> encode_msg(message, <<"New rank requested">>);
         Fail -> lager:info("set rank failed: ~p", [Fail]),
