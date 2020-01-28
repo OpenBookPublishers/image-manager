@@ -21,6 +21,7 @@ create table image (
        rank integer not null,
        licence_status varchar(30) not null references copyright(licence_status),
        placeholder boolean not null,
+       acceptability boolean not null,
        unique (chapter_uuid, rank)
 );
 
