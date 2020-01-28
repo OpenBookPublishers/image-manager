@@ -87,4 +87,4 @@ process_thumbnail_details(Hash, Format, Resolution, Res_Category, Filename, Meta
                                    Res_Category, Filename, Metadata).
 
 process_failed_thumbnail(Hash) ->
-    img_mgr_serv:fail_image(Hash, "Could not generate thumbnail").
+    img_mgr_serv:fail_image(Hash, <<"Could not generate thumbnail">>).

@@ -47,7 +47,7 @@ start_link() ->
 
 receive_upload(Filename, Hash, Data, MimeType, Metadata)
   when is_binary(Filename), is_binary(Hash), is_binary(Data),
-       is_binary(MimeType) ->
+       is_binary(MimeType), is_tuple(Metadata) ->
     gen_server:call(?SERVER, {upload, Filename, Hash, Data, MimeType, Metadata}).
 
 set_image_details(Hash, Format, Resolution, Res_Category, Filename, Metadata) ->
@@ -58,7 +58,7 @@ update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image)
   when is_binary(Hash) ->
     gen_server:call(?SERVER, {update_details, Hash, Chapter_Uuid, Caption, Licence_Status, Image}).
 
-fail_image(Hash, Reason) when is_binary(Hash) ->
+fail_image(Hash, Reason) when is_binary(Hash), is_binary(Reason) ->
     gen_server:call(?SERVER, {failed, Hash, Reason}).
 
 remove_image(Hash) when is_binary(Hash) ->
@@ -168,7 +168,7 @@ code_change(_OldVsn, State, _Extra) ->
 % ideally we'd plumb the filename through to here
 dupe(Hash) ->
     lager:info("Duplicate file: ~p", [Hash]),
-    img_mgr_proto:notice("Duplicate file uploaded."),
+    img_mgr_proto:notice(<<"Duplicate file uploaded.">>),
     ok.
 
 with_db_connection(F) ->
@@ -242,9 +242,9 @@ save_image_transaction(C, Query, Chapter_Uuid, Parameters) ->
     {Rank, epgsql:equery(C, Query, Parameters2)}.
 
 
-do_fail_image(Hash, Reason) when is_binary(Hash) ->
+do_fail_image(Hash, Reason) when is_binary(Hash), is_binary(Reason) ->
     lager:info("Failed image (~p): ~p", [Hash, Reason]),
-    Notice = "Image upload failed: " ++ Reason,
+    Notice = <<"Image upload failed: ", Reason/binary>>,
     img_mgr_proto:notice(Notice),
     do_remove_image(Hash).
 

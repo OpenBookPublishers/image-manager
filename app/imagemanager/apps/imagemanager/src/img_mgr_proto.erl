@@ -43,7 +43,7 @@ remove_image(Hash) when is_binary(Hash) ->
      },
     broadcast(delete, Details).
 
-notice(Notice) ->
+notice(Notice) when is_binary(Notice) ->
     Details = #{
       message => Notice
      },

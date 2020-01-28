@@ -81,7 +81,7 @@ process_image_details(Hash, Result, Filename, Metadata) ->
     Resolution = lists:nth(3, Tokens),
     case {format:allowed(Format), resolution:category(Resolution)} of
         {false, _} -> img_mgr_serv:fail_image(
-                        Hash, "Image format not allowed: " ++ Format);
+                        Hash, <<"Image format not allowed: ", Format/binary>>);
 %       {_, {rejected, Reason}} -> img_mgr_serv:fail_image(Hash, Reason);
         {_, {ok, Res_Category}} ->
             q_img_thumbnail:submit({Hash, Format, Resolution,
@@ -90,4 +90,4 @@ process_image_details(Hash, Result, Filename, Metadata) ->
     end.
 
 process_failed_image(Hash, _Filename) ->
-    img_mgr_serv:fail_image(Hash, "Could not identify(1) image").
+    img_mgr_serv:fail_image(Hash, <<"Could not identify(1) image">>).
