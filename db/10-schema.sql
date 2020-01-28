@@ -38,4 +38,5 @@ create table image_details (
        
 create view image_chapter as
 select * from image
-  left join chapter using (chapter_uuid);
+  left join chapter using (chapter_uuid)
+  left join copyright using (licence_status);
