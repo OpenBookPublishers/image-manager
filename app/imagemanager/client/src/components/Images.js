@@ -61,6 +61,7 @@ class Images extends React.Component {
                 const chapterId = img.figure_id;
                 const ord = idx + 1;
                 const imgText = img.text;
+                const className = img.acceptability ? "acceptable" : "rejected";
                 const secondary = "Fig " + chapterId + "." + ord + ", " + img.res_category +
                       " (" + img.resolution + ")";
 
@@ -84,7 +85,7 @@ class Images extends React.Component {
                       <IconButton onClick={() => this.props.editCb(img.id, img)}>
                         <MaterialIcon icon='edit' />
                       </IconButton>
-                      <ListItemText
+                      <ListItemText className={className}
                         primaryText={imgText}
                         secondaryText={secondary} />
                     </ListItem>

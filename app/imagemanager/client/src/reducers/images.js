@@ -16,6 +16,7 @@ const makeImage = (detail) => {
         rank: detail.rank,
         figure_id: detail.figure_id,
         licence_status: detail.licence_status,
+        acceptability: detail.acceptability,
         completed: false
     };
     if(detail.optional) {

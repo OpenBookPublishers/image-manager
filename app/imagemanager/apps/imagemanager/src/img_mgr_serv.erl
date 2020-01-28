@@ -298,7 +298,8 @@ all_image_details() ->
     ),
     Images = util:sql_result_to_map_list(Results),
     Optionals = all_optional_details(),
-    [ I#{ <<"optional">> => maps:get(Hash, Optionals, []) }
+    [ I#{ <<"optional">> => maps:get(Hash, Optionals, []),
+          <<"acceptability">> => acceptability(I) }
       || I = #{ <<"hash">> := Hash } <- Images ].
 
 all_chapter_details() ->
