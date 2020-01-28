@@ -200,7 +200,7 @@ save_image(Hash, Format, Resolution, Res_Category, Filename, Metadata)
     Query =
         "INSERT INTO image " ++
         "(hash, image_name, format, resolution, res_category, chapter_uuid, " ++
-        "licence_status, placeholder, rank) VALUES " ++ 
+        "licence_status, placeholder, rank) VALUES " ++
         "($1, $2, $3, $4, $5, $6, $7, $8, $9);",
 
     Caption = "Caption TBD for " ++ binary_to_list(Filename),
@@ -218,9 +218,8 @@ save_image(Hash, Format, Resolution, Res_Category, Filename, Metadata)
     try with_db_connection(
       fun(C) -> save_image_transaction(C, Query, Chapter_Uuid, Parameters) end
     ) of
-        {Rank, {ok, _Count}} ->
-            img_mgr_proto:update_image(Hash, Format, Resolution, Res_Category,
-                                       Filename, Chapter_Uuid, Rank, Copyright),
+        {_Rank, {ok, _Count}} ->
+            dispatch_image_data(Hash),
             ok;
         {_, {error, {_, _, _Code, unique_violation, _Msg, _Details}}} ->
             dupe(Hash)
@@ -359,7 +358,7 @@ do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image) ->
                         epgsql:equery(C, Stmt1, Parameters1),
                         Results = epgsql:equery(C, Stmt2, Parameters2),
                         Results2 = util:sql_result_to_map_list(Results),
-                        Optional_Updates = [ 
+                        Optional_Updates = [
                           try_update_optional_detail(C, Hash, Key, Image)
                         || Key <- ?OPTIONAL_KEYS, map_has_key(Key, Image) ],
                         {Results2, Optional_Updates}
@@ -368,8 +367,7 @@ do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image) ->
     [Updates|[]] = Results2,
     lager:info("Updates: ~p", [Updates]),
     lager:info("Optional Updates: ~p", [Optional_Updates]),
-    Updates2 = Updates#{ optional => maps:from_list(Optional_Updates) },
-    img_mgr_proto:update_image(Updates2),
+    dispatch_image_data(Hash),
     ok.
     %% TODO: need to notify the client of error
 
@@ -479,16 +477,24 @@ acceptability(Data) ->
     end.
 
 image_data(Hash) when is_binary(Hash) ->
+     with_transaction(
+       fun(C) -> image_data(C, Hash) end
+      ).
+
+image_data(C, Hash) when is_binary(Hash) ->
     Stmt1 = "SELECT * FROM image LEFT JOIN copyright USING (licence_status) WHERE hash = $1;",
     Stmt2 = "SELECT * FROM image_details WHERE HASH = $1;",
-    Data = with_transaction(
-      fun(C) -> 
-              Results = epgsql:equery(C, Stmt1, [Hash]),
-              [Image_Data|[]] = util:sql_result_to_map_list(Results),
-              {ok, _H, Results2} = epgsql:equery(C, Stmt2, [Hash]),
-              Results3 = maps:from_list(image_optional_details(Hash, Results2)),
-              Image_Data#{ optional => Results3 }
-      end
-            ),
+
+    Results = epgsql:equery(C, Stmt1, [Hash]),
+    [Image_Data|[]] = util:sql_result_to_map_list(Results),
+    {ok, _H, Results2} = epgsql:equery(C, Stmt2, [Hash]),
+    Results3 = maps:from_list(image_optional_details(Hash, Results2)),
+    Data = Image_Data#{ optional => Results3 },
     Acceptability = acceptability(Data),
     Data#{ acceptability => Acceptability }.
+
+dispatch_image_data(Hash) ->
+    img_mgr_proto:update_image(image_data(Hash)).
+
+%dispatch_image_data(C, Hash) ->
+%    img_mgr_proto:update_image(image_data(C, Hash)).
