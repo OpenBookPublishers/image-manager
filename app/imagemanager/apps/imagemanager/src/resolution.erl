@@ -7,6 +7,7 @@
 -module(resolution).
 
 -export([category/1]).
+-export([check/1]).
 
 % we expect Resolution to be in the form "1920x768"
 category(Resolution) ->
@@ -25,3 +26,9 @@ sieve_category(Height, Width)
 sieve_category(_, _) -> {ok, low_res}.
 
 % can also say {rejected, "Reason ..."}
+
+check(<<"full_page">>) -> ok;
+check(<<"half_page">>) -> ok;
+check(<<"small">>) -> ok;
+check(_) -> rejected.
+
