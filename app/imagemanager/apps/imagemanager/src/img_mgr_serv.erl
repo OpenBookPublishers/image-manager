@@ -182,7 +182,7 @@ with_db_connection(F) ->
         .
 
 with_transaction(F) ->
-    Opts = #{ reraise => true },
+    Opts = [{reraise, true}],
     C = util:db_connection(),
     try
         epgsql:with_transaction(C, fun(C0) -> F(C0) end, Opts)
