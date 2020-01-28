@@ -19,7 +19,9 @@
          all_chapters/0, all_licences/0, fail_image/2, update_image_details/5,
          set_image_rank/2]).
 
+% the following fns probably don't need to be exposed
 -export([all_optional_details/0]).
+-export([image_data/1]).
 
 -define(SERVER, ?MODULE).
 
@@ -457,3 +459,36 @@ propagate_rank_updates(From_Rank, To_Rank, Chapter_Uuid) ->
       end
      ),
     ok.
+
+check_caption(Caption) ->
+    case binary:match(Caption, <<"TBD">>, []) of
+        nomatch -> ok;
+        _ -> bad
+    end.
+
+acceptability(Data) ->
+    #{ <<"res_category">> := RC,
+       <<"allowed">> := Copyright_Status,
+       <<"image_name">> := Caption
+     } = Data,
+    case {resolution:check(RC),
+          check_caption(Caption),
+          Copyright_Status} of
+        {ok, ok, true} -> true;
+        _ -> false
+    end.
+
+image_data(Hash) when is_binary(Hash) ->
+    Stmt1 = "SELECT * FROM image LEFT JOIN copyright USING (licence_status) WHERE hash = $1;",
+    Stmt2 = "SELECT * FROM image_details WHERE HASH = $1;",
+    Data = with_transaction(
+      fun(C) -> 
+              Results = epgsql:equery(C, Stmt1, [Hash]),
+              [Image_Data|[]] = util:sql_result_to_map_list(Results),
+              {ok, _H, Results2} = epgsql:equery(C, Stmt2, [Hash]),
+              Results3 = maps:from_list(image_optional_details(Hash, Results2)),
+              Image_Data#{ optional => Results3 }
+      end
+            ),
+    Acceptability = acceptability(Data),
+    Data#{ acceptability => Acceptability }.
