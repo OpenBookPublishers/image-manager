@@ -18,7 +18,6 @@ broadcast_raw(Msg) ->
     gproc_ps:publish(l, ?SERVER, Msg).
 
 broadcast_json(Type, Details) ->
-    lager:info("TD: ~p ~p", [Type, Details]),
     broadcast_raw(encode_msg(Type, Details)).
 
 encode_msg(Type, Details) ->
