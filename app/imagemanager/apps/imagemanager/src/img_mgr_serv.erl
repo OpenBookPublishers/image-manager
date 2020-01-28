@@ -202,12 +202,13 @@ save_image(Hash, Format, Resolution, Res_Category, Filename, Metadata)
     Query =
         "INSERT INTO image " ++
         "(hash, image_name, format, resolution, res_category, chapter_uuid, " ++
-        "licence_status, placeholder, rank) VALUES " ++
-        "($1, $2, $3, $4, $5, $6, $7, $8, $9);",
+        "licence_status, placeholder, acceptability, rank) VALUES " ++
+        "($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);",
 
     Caption = "Caption TBD for " ++ binary_to_list(Filename),
     Copyright = "To Be Determined",
     Placeholder = false,
+    Acceptability = false,
     Parameters = [Hash,
                   Caption,
                   Format,
@@ -215,7 +216,8 @@ save_image(Hash, Format, Resolution, Res_Category, Filename, Metadata)
                   Res_Category,
                   Chapter_Uuid,
                   Copyright,
-                  Placeholder
+                  Placeholder,
+                  Acceptability
                  ],
     try with_db_connection(
       fun(C) -> save_image_transaction(C, Query, Chapter_Uuid, Parameters) end
@@ -300,8 +302,7 @@ all_image_details() ->
     ),
     Images = util:sql_result_to_map_list(Results),
     Optionals = all_optional_details(),
-    [ I#{ <<"optional">> => maps:get(Hash, Optionals, []),
-          <<"acceptability">> => acceptability(I) }
+    [ I#{ <<"optional">> => maps:get(Hash, Optionals, []) }
       || I = #{ <<"hash">> := Hash } <- Images ].
 
 all_chapter_details() ->
@@ -348,6 +349,14 @@ map_has_key(Key, Map) ->
         {ok, _Value} -> true
     end.
 
+update_acceptability(C, Hash, Current_Acceptability, Acceptability) ->
+    if Acceptability =/= Current_Acceptability ->
+            Stmt = "UPDATE image SET acceptability = $1 WHERE hash = $2;",
+            epgsql:equery(C, Stmt, [Acceptability, Hash]),
+            ok;
+       true -> ok
+    end.
+
 do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image)
   when is_binary(Hash) ->
     Stmt1 = "UPDATE image SET chapter_uuid = $1, image_name = $2, licence_status = $3 WHERE hash = $4;",
@@ -359,7 +368,11 @@ do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image)
                 fun(C) ->
                         epgsql:equery(C, Stmt1, Parameters1),
                         Results = epgsql:equery(C, Stmt2, Parameters2),
-                        util:sql_result_to_map_list(Results),
+                        [Data|[]] = util:sql_result_to_map_list(Results),
+                        Acceptability = acceptability(Data),
+                        #{ <<"acceptability">> := Current_Acceptability } = Data,
+                        update_acceptability(C, Hash, Current_Acceptability,
+                                             Acceptability),
                         [
                           try_update_optional_detail(C, Hash, Key, Image)
                         || Key <- ?OPTIONAL_KEYS, map_has_key(Key, Image) ]
@@ -450,7 +463,8 @@ propagate_rank_updates(From_Rank, To_Rank, Chapter_Uuid) ->
       fun(C) ->
               Res0 = epgsql:equery(C, Stmt, Parameters),
               Res1 = util:sql_result_to_map_list(Res0),
-              [ img_mgr_proto:update_image(Res) || Res <- Res1 ]
+              [ dispatch_image_data(C, Hash)
+                || #{ <<"hash">> := Hash } <- Res1 ]
       end
      ),
     ok.
@@ -486,9 +500,11 @@ image_data(C, Hash) when is_binary(Hash) ->
     [Image_Data|[]] = util:sql_result_to_map_list(Results),
     {ok, _H, Results2} = epgsql:equery(C, Stmt2, [Hash]),
     Results3 = maps:from_list(image_optional_details(Hash, Results2)),
-    Data = Image_Data#{ optional => Results3 },
-    Acceptability = acceptability(Data),
-    Data#{ acceptability => Acceptability }.
+    Image_Data#{ optional => Results3 }.
 
 dispatch_image_data(Hash) when is_binary(Hash) ->
     img_mgr_proto:update_image(image_data(Hash)).
+
+dispatch_image_data(C, Hash) when is_binary(Hash) ->
+    img_mgr_proto:update_image(image_data(C, Hash)).
+
