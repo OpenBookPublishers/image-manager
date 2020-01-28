@@ -325,20 +325,17 @@ all_optional_details() ->
     Hashes = util:unique_list([ Hash || {Hash, _, _} <- Results ]),
     maps:from_list([ {H, image_optional_details(H, Results)} || H <- Hashes ]).
 
-do_update_optional_detail(Hash, Detail_Name, Detail_Value) ->
+do_update_optional_detail(C, Hash, Detail_Name, Detail_Value) ->
     Stmt1 = "DELETE FROM image_details WHERE hash = $1 AND detail_type = $2;",
     Stmt2 = "INSERT INTO image_details (hash, detail_type, detail_value) VALUES ($1, $2, $3);",
     Parameters1 = [Hash, Detail_Name],
     Parameters2 = [Hash, Detail_Name, Detail_Value],
-    {ok, _} = with_transaction(
-      fun(C) ->
-              epgsql:equery(C, Stmt1, Parameters1),
-              epgsql:equery(C, Stmt2, Parameters2)
-      end).
+    {ok, _} = epgsql:equery(C, Stmt1, Parameters1),
+    {ok, _} = epgsql:equery(C, Stmt2, Parameters2).
 
-try_update_optional_detail(Hash, Detail_Name, Image) ->
+try_update_optional_detail(C, Hash, Detail_Name, Image) ->
     {ok, Detail_Value} = maps:find(Detail_Name, Image),
-    do_update_optional_detail(Hash, Detail_Name, Detail_Value),
+    do_update_optional_detail(C, Hash, Detail_Name, Detail_Value),
     {Detail_Name, Detail_Value}.
 
 map_has_key(Key, Map) ->
@@ -355,15 +352,18 @@ do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image) ->
     Parameters1 = [Chapter_Uuid, Caption, Licence_Status, Hash],
     Stmt2 = "SELECT * FROM image_chapter WHERE hash = $1;",
     Parameters2 = [Hash],
-    Results = with_transaction(
+    {Results2, Optional_Updates} = with_transaction(
                 fun(C) ->
                         epgsql:equery(C, Stmt1, Parameters1),
-                         epgsql:equery(C, Stmt2, Parameters2)
+                        Results = epgsql:equery(C, Stmt2, Parameters2),
+                        Results2 = util:sql_result_to_map_list(Results),
+                        Optional_Updates = [ 
+                          try_update_optional_detail(C, Hash, Key, Image)
+                        || Key <- ?OPTIONAL_KEYS, map_has_key(Key, Image) ],
+                        {Results2, Optional_Updates}
                 end),
-    Results2 = util:sql_result_to_map_list(Results),
+    % need Results2
     [Updates|[]] = Results2,
-    Optional_Updates = [ try_update_optional_detail(Hash, Key, Image)
-                         || Key <- ?OPTIONAL_KEYS, map_has_key(Key, Image) ],
     lager:info("Updates: ~p", [Updates]),
     lager:info("Optional Updates: ~p", [Optional_Updates]),
     Updates2 = Updates#{ optional => maps:from_list(Optional_Updates) },
