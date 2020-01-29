@@ -11,8 +11,10 @@
 -export([start/2, stop/1]).
 
 start(_StartType, _StartArgs) ->
+    Secs = 15,
     ppool:start_pool(q_img_analyser, 2, {q_img_analyser, start_link, []}),
     ppool:start_pool(q_img_thumbnail, 1, {q_img_thumbnail, start_link, []}),
+    ok = util:wait_for_db(Secs),
     ok = start_cowboy(),
     imagemanager_sup:start_link().
 
