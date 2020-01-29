@@ -296,13 +296,13 @@ create_file(Hash, Path, Data, Filename, _MimeType, Metadata) ->
 
 % technically should all be in the same db transaction
 all_image_details() ->
-    Stmt1 = "SELECT * FROM image_chapter ORDER BY rank;",
+    Stmt1 = "SELECT * FROM image_chapter ORDER BY ordinal, rank;",
     Results = with_db_connection(
                 fun(C) -> epgsql:equery(C, Stmt1, []) end
     ),
     Images = util:sql_result_to_map_list(Results),
     Optionals = all_optional_details(),
-    [ I#{ <<"optional">> => maps:get(Hash, Optionals, []) }
+    [ I#{ <<"optional">> => maps:from_list(maps:get(Hash, Optionals, [])) }
       || I = #{ <<"hash">> := Hash } <- Images ].
 
 all_chapter_details() ->
