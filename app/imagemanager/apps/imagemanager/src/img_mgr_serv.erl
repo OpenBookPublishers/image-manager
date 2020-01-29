@@ -25,19 +25,7 @@
 
 -define(SERVER, ?MODULE).
 
-% needs to match both DB and client app
--define(OPTIONAL_KEYS,
-        [
-         <<"provenance">>,
-         <<"url">>,
-         <<"orig_artist">>,
-         <<"orig_year">>,
-         <<"orig_medium">>,
-         <<"orig_title">>,
-         <<"orig_size">>
-        ]).
-
--record(state, {}).
+-record(state, {optional_keys=[]}).
 
 %%%===================================================================
 %%% API
@@ -84,6 +72,7 @@ set_image_rank(Hash, NewRank)
 
 init([]) ->
     process_flag(trap_exit, true),
+    self() ! {initialise, []},
     {ok, #state{}}.
 
 
@@ -107,7 +96,9 @@ handle_call({set_details, Hash, Format, Resolution, Res_Category, Filename, Meta
 handle_call({update_details, Hash, Chapter_Uuid, Caption, Licence_Status,
              Image},
             _From, State) ->
-    do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image),
+    Optional_Keys = State#state.optional_keys,
+    do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status,
+                            Image, Optional_Keys),
     Reply = ok,
     {reply, Reply, State};
 
@@ -150,6 +141,10 @@ handle_cast(_Msg, State) ->
     {noreply, State}.
 
 
+handle_info({initialise, _}, State) ->
+    Optional_Keys = do_get_optional_keys(),
+    NewState = State#state{optional_keys=Optional_Keys},
+    {noreply, NewState};
 handle_info(_Info, State) ->
     {noreply, State}.
 
@@ -357,7 +352,8 @@ update_acceptability(C, Hash, Current_Acceptability, Acceptability) ->
        true -> ok
     end.
 
-do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image)
+do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status,
+                        Image, Optional_Keys)
   when is_binary(Hash) ->
     Stmt1 = "UPDATE image SET chapter_uuid = $1, image_name = $2, licence_status = $3 WHERE hash = $4;",
 
@@ -375,7 +371,7 @@ do_update_image_details(Hash, Chapter_Uuid, Caption, Licence_Status, Image)
                                              Acceptability),
                         [
                           try_update_optional_detail(C, Hash, Key, Image)
-                        || Key <- ?OPTIONAL_KEYS, map_has_key(Key, Image) ]
+                        || Key <- Optional_Keys, map_has_key(Key, Image) ]
                 end),
     dispatch_image_data(Hash),
     ok.
@@ -508,3 +504,11 @@ dispatch_image_data(Hash) when is_binary(Hash) ->
 dispatch_image_data(C, Hash) when is_binary(Hash) ->
     img_mgr_proto:update_image(image_data(C, Hash)).
 
+do_get_optional_keys() ->
+    Stmt = "SELECT detail_type FROM detail;",
+    with_transaction(
+      fun(C) ->
+              {ok, _H, Results} = epgsql:equery(C, Stmt, []),
+              [ Result || { Result } <- Results ]
+      end
+     ).
