@@ -44,7 +44,7 @@ case "$1" in
         clearcache
         ;;
     rebuild-client)
-        (cd app/${APPNAME}/client && npm run build)
+        (cd app/client && npm run build)
         ;;
     install-client)
         (cd app/${APPNAME}/client && ./postbuild.sh)

@@ -2,11 +2,11 @@ FROM node AS npm
 
 WORKDIR /build
 
-COPY imagemanager/client/package-lock.json ./
-COPY imagemanager/client/package.json ./
+COPY client/package-lock.json ./
+COPY client/package.json ./
 RUN npm install --no-cache
-COPY imagemanager/client/src ./src
-COPY imagemanager/client/public ./public
+COPY client/src ./src
+COPY client/public ./public
 RUN npm run build
 
 # Build stage 0

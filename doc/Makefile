@@ -8,5 +8,5 @@ obparch.png: obparch.dot
 	md2pdf $<
 
 install: using-image-manager.pdf
-	cp $^ ../app/imagemanager/client/public
+	cp $^ ../app/client/public
 
